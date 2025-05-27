@@ -22,5 +22,6 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         context: .
+        dockerfile: Dockerfile
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/wan2.1:latest
