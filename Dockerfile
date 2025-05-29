@@ -1,24 +1,21 @@
-# Use official PyTorch CUDA image
-FROM pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
 
-RUN echo "Updating apt repositories and installing system packages..." && \
-    apt-get update -y && \
-    apt-get install -y git ffmpeg libsm6 libxext6 python3-pip curl wget --no-install-recommends && \
-    echo "System packages installed."
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN echo "Upgrading pip and installing Python dependencies..." && \
-    pip install --upgrade pip && \
-    pip install torch torchvision torchaudio fastapi uvicorn transformers numpy opencv-python && \
-    echo "Python dependencies installed."
+RUN apt-get update -y && \
+    apt-get install -y git ffmpeg libsm6 libxext6 python3-pip curl wget && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN echo "Cloning WAN2.1 repo..." && \
-    git clone https://github.com/deepseek-ai/wan2.1.git /app/wan2.1 && \
-    echo "Repository cloned."
+WORKDIR /app
 
-WORKDIR /app/wan2.1
+# Clone the WAN2.1 repository
+RUN git clone https://github.com/Wan-Video/Wan2.1.git && \
+    cd Wan2.1 && \
+    pip install -r requirements.txt
 
-COPY app.py /app/wan2.1/app.py
+COPY entrypoint.sh /app/entrypoint.sh
+COPY app.py /app/app.py
 
-EXPOSE 8000
+RUN chmod +x /app/entrypoint.sh
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["/app/entrypoint.sh"]
